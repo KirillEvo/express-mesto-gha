@@ -28,15 +28,16 @@ const postCards = (req, res) => {
 };
 
 const deleteCards = (req, res) => {
-  Card.findByIdAndRemove(req.params.id)
+  Card.findByIdAndRemove(req.params.cardId)
     .then((card) => {
       if (!card) {
-        return res.status(404).send({ message: 'Карточка с указанным _id не найдена' });
+        res.status(404).send({ message: 'Карточка с указанным _id не найдена' });
+      } else {
+        res.status(200).send(card);
       }
-      return res.send(card);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err.name === 'CastError') {
         res.status(400).send({ message: 'Переданы некорректные данные для удаления карточки' });
       } else {
         res.status(500).send({ message: 'Ошибка по умолчанию' });

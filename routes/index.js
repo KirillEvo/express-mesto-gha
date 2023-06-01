@@ -7,5 +7,9 @@ const cardRoutes = require('./cards');
 router.use('/users', userRoutes);
 router.use('/cards', cardRoutes);
 
+router.use('*', (req, res) => {
+  res.status(404).send({ message: 'Некорректный путь' });
+});
+
 router.use(express.json());
 module.exports = router;
