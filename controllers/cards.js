@@ -1,79 +1,89 @@
 const { VALIDATION_ERROR, NOT_FOUND_ERROR, REFERENCE_ERROR } = require('../errors/errors');
-const Card = require('../modules/cards');
+const Card = require('../models/cards');
 
-module.exports.getCards = (req, res, next) => {
+const getCards = (req, res) => {
   Card
     .find({})
     .then((cards) => res.send(cards))
     .catch((err) => {
       if (err.name === 'ReferenceError') {
-        next(res.status(REFERENCE_ERROR).send({ message: 'Произошла ошибка по умолчанию' }));
+        res.status(REFERENCE_ERROR).send({ message: 'Ошибка по умолчанию.' });
+      } else {
+        res.status(VALIDATION_ERROR).send({ message: 'Переданы некорректные данные при создании карточки.' });
       }
-      next(err);
     });
 };
 
-module.exports.postCards = (req, res, next) => {
+const postCards = (req, res) => {
   const { name, link } = req.body;
   const owner = req.user._id;
   Card.create({ name, link, owner })
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(res.status(VALIDATION_ERROR).send({ message: 'Переданы некорректные данные при создании карточки' }));
+      if (err.name === 'NotFoundError') {
+        res.status(NOT_FOUND_ERROR).send({ message: 'Карточка с указанным _id не найдена.' });
       }
-      next(res.status(REFERENCE_ERROR).send({ message: 'Произошла ошибка по умолчанию' }));
     });
 };
 
-module.exports.deleteCards = (req, res, next) => {
+const deleteCards = (req, res) => {
   Card.findByIdAndRemove(req.params.id)
     .then((card) => {
       if (!card) {
-        next(res.status(NOT_FOUND_ERROR).send({ message: 'Карточка с указанным _id не найдена' }));
+        return res.status(NOT_FOUND_ERROR).send({ message: 'Карточка с указанным _id не найдена' });
       }
-      next(res.send({ data: card }));
+      return res.send({ data: card });
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
-        next(res.status(VALIDATION_ERROR).send({ message: 'Переданы некорректные данные для удаления карточки' }));
+      if (err.name === 'ValidationError') {
+        res.status(VALIDATION_ERROR).send({ message: 'Переданы некорректные данные для удаления карточки' });
+      } else {
+        res.status(REFERENCE_ERROR).send({ message: 'Ошибка по умолчанию' });
       }
-      next(res.status(REFERENCE_ERROR).send({ message: 'Произошла ошибка по умолчанию' }));
     });
 };
 
-module.exports.likeCard = (req, res, next) => Card.findByIdAndUpdate(
+const likeCard = (req, res) => Card.findByIdAndUpdate(
   req.params.cardId,
   { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
   { new: true },
 )
   .then((card) => {
     if (!card) {
-      next(res.status(NOT_FOUND_ERROR).send({ message: 'Переданы некорректные данные для постановки лайка.' }));
+      return res.status(NOT_FOUND_ERROR).send({ message: 'Переданы некорректные данные для постановки лайка.' });
     }
-    next(res.send({ data: card }));
+    return res.send({ data: card });
   })
   .catch((err) => {
-    if (err.name === 'CastError') {
-      next(res.status(VALIDATION_ERROR).send({ message: 'Передан несуществующий _id карточки' }));
+    if (err.name === 'ValidationError') {
+      res.status(VALIDATION_ERROR).send({ message: 'Передан несуществующий _id карточки' });
     }
-    next(res.status(REFERENCE_ERROR).send({ message: 'Произошла ошибка по умолчанию' }));
+    res.status(REFERENCE_ERROR).send({ message: 'Произошла ошибка по умолчанию' });
   });
 
-module.exports.dislikeCard = (req, res, next) => Card.findByIdAndUpdate(
+const dislikeCard = (req, res) => Card.findByIdAndUpdate(
   req.params.cardId,
   { $pull: { likes: req.user._id } }, // убрать _id из массива
   { new: true },
 )
   .then((card) => {
-    if (card) {
-      next(res.status(NOT_FOUND_ERROR).send({ message: 'Передан несуществующий _id карточки' }));
+    if (!card) {
+      return res.status(NOT_FOUND_ERROR).send({ message: 'Передан несуществующий _id карточки' });
     }
-    next(res.send({ data: card }));
+    return res.send({ data: card });
   })
   .catch((err) => {
     if (err.name === 'castError') {
-      next(res.status(VALIDATION_ERROR).send({ message: 'Переданы некорректные данные для снятия лайка.' }));
+      res.status(VALIDATION_ERROR).send({ message: 'Переданы некорректные данные для снятия лайка.' });
+    } else {
+      res.status(REFERENCE_ERROR).send({ message: 'Произошла ошибка по умолчанию' });
     }
-    next(res.status(REFERENCE_ERROR).send({ message: 'Произошла ошибка по умолчанию' }));
   });
+
+module.exports = {
+  getCards,
+  postCards,
+  deleteCards,
+  likeCard,
+  dislikeCard,
+};

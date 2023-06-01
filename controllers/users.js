@@ -1,79 +1,89 @@
 const { VALIDATION_ERROR, NOT_FOUND_ERROR, REFERENCE_ERROR } = require('../errors/errors');
-const User = require('../modules/users');
+const User = require('../models/users');
 
-module.exports.getUsers = (req, res, next) => {
+const getUsers = (req, res) => {
   User.find({})
-    .then((users) => res.send(users))
+    .then((users) => res.status(200).send(users))
     .catch((err) => {
       if (err.name === 'ReferenceError') {
-        next(res.status(REFERENCE_ERROR).send({ message: 'Произошла ошабка по умолчанию' }));
+        res.status(REFERENCE_ERROR).send({ message: 'Ошибка по умолчанию.' });
+      } else {
+        res.status(VALIDATION_ERROR).send({ message: 'Переданы некорректные данные при создании пользователя.' });
       }
-      next(err);
     });
 };
 
-module.exports.getUserById = (req, res, next) => {
-  User.findById(req.user._id)
-    .then((user) => {
-      if (!user) {
-        next(res.status(NOT_FOUND_ERROR).send({ message: 'Пользователь по указанному _id не найден' }));
-      }
-      next(res.send({ data: user }));
-    })
+const getUserById = (req, res) => {
+  const { userId } = req.params;
+  User.findById(userId)
+    .orFail(() => new Error('Not found'))
+    .then((user) => res.status(200).send(user))
     .catch((err) => {
-      if (err.name === 'CastError') {
-        next(res.status(VALIDATION_ERROR).send({ message: 'Переданы некорректные данные _id' }));
+      if (err.message === 'Not found') {
+        res.status(404).send({ message: `Пользователь по указанному _id не найден. ${userId}` });
+      } else {
+        res.status(500).send({ message: 'Ошибка по умолчанию.' });
       }
-      next(res.status(REFERENCE_ERROR).send({ message: 'Произошла ошибка по умолчанию' }));
     });
 };
 
-module.exports.createNewUser = (req, res, next) => {
+const createNewUser = (req, res) => {
   const { name, about, avatar } = req.body;
   User.create({ name, about, avatar })
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(res.status(VALIDATION_ERROR).send({ message: 'Переданы некорректные данные при создании пользователя' }));
+        res.status(VALIDATION_ERROR).send({ message: 'Переданы некорректные данные при создании пользователя.' });
+      } else {
+        res.status(REFERENCE_ERROR).send({ message: 'Ошибка по умолчанию.' });
       }
-      next(res.status(REFERENCE_ERROR).send({ message: 'Произошла ошибка по умолчанию' }));
     });
 };
 
-module.exports.updateUser = (req, res, next) => {
+const updateUser = (req, res) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(
     req.user._id,
     { name, about },
-    { new: true },
+    { new: true, runValidators: true },
   )
     .then((user) => {
       if (!user) {
-        next(res.status(NOT_FOUND_ERROR).send({ message: 'Пользователь по указанному _id не найден' }));
+        return res.status(NOT_FOUND_ERROR).send({ message: 'Пользователь с указанным _id не найден.' });
       }
-      next(res.send({ data: user }));
+      return res.send({ data: user });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(res.status(VALIDATION_ERROR).send({ message: 'Переданы некорректные данные при обновлении профиля' }));
+        res.status(VALIDATION_ERROR).send({ message: 'Переданы некорректные данные при обновлении профиля.' });
+      } else {
+        res.status(REFERENCE_ERROR).send({ message: 'Ошибка по умолчанию.' });
       }
-      next(res.status(REFERENCE_ERROR).send({ message: 'Произошла ошибка по умолчанию' }));
     });
 };
 
-module.exports.updateUserAvatar = (req, res, next) => {
+const updateUserAvatar = (req, res) => {
   const { avatar } = req.body;
-  User.findByIdAndUpdate(req.user._id, { avatar })
+  User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .then((user) => {
       if (!user) {
-        next(res.status(NOT_FOUND_ERROR).send({ message: 'Переданы некорректные данные при обновлении аватара' }));
+        return res.status(VALIDATION_ERROR).send({ message: 'Пользователь с указанным _id не найден' });
       }
-      next(res.send({ data: user }));
+      return res.status(200).send(user);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(res.status(VALIDATION_ERROR).send({ message: 'Пользователь с указанным _id не найден' }));
+      if (err.name === 'NotFoundError') {
+        res.status(NOT_FOUND_ERROR).send({ message: 'Переданы некорректные данные при обновлении аватара' });
+      } else {
+        res.status(REFERENCE_ERROR).send({ message: 'Произошла ошибка по умолчанию' });
       }
-      next(res.status(REFERENCE_ERROR).send({ message: 'Произошла ошибка по умолчанию' }));
     });
+};
+
+module.exports = {
+  getUsers,
+  getUserById,
+  createNewUser,
+  updateUser,
+  updateUserAvatar,
 };
