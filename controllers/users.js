@@ -3,27 +3,22 @@ const User = require('../models/user');
 const getUsers = (req, res) => {
   User.find({})
     .then((users) => res.status(200).send(users))
-    .catch((err) => {
-      if (err.name === 'ReferenceError') {
-        res.status(500).send({ message: 'Ошибка по умолчанию.' });
-      } else {
-        res.status(400).send({ message: 'Переданы некорректные данные при создании пользователя.' });
-      }
+    .catch(() => {
+      res.status(500).send({ message: 'Ошибка по умолчанию.' });
     });
 };
 
 const getUserById = (req, res) => {
   const { userId } = req.params;
   User.findById(userId)
+    .orFail(new Error('NotValidId'))
     .then((user) => {
-      if (!user) {
-        res.status(404).send({ message: `Пользователь по указанному _id не найден. ${userId}` });
-      } else {
-        res.status(200).send(user);
-      }
+      res.send(user);
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.message === 'NotValidId') {
+        res.status(404).send({ message: 'Пользователь по указанному _id не найден.' });
+      } else if (err.name === 'CastError') {
         res.status(400).send({ message: 'Переданы некорректные данные' });
       } else {
         res.status(500).send({ message: 'Ошибка по умолчанию.' });
@@ -34,7 +29,7 @@ const getUserById = (req, res) => {
 const createNewUser = (req, res) => {
   const { name, about, avatar } = req.body;
   User.create({ name, about, avatar })
-    .then((user) => res.send({ data: user }))
+    .then((user) => res.status(201).send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'Переданы некорректные данные при создании пользователя.' });

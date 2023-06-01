@@ -1,5 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const helmet = require('helmet');
 const routes = require('./routes');
 
 const { PORT = 3000 } = process.env;
@@ -7,6 +8,8 @@ const { PORT = 3000 } = process.env;
 const app = express();
 
 app.use(express.json());
+
+app.use(helmet());
 
 mongoose.connect('mongodb://127.0.0.1:27017/mestodb', {
   useNewUrlParser: true, useUnifiedTopology: true,
