@@ -1,4 +1,4 @@
-const Card = require('../models/cards');
+const Card = require('../models/card');
 
 const getCards = (req, res) => {
   Card
@@ -52,39 +52,41 @@ const likeCard = (req, res) => {
   )
     .then((card) => {
       if (!card) {
-        res.status(400).send({ message: 'Переданы некорректные данные для постановки/снятии лайка.' });
+        res.status(404).send({ message: 'Передан несуществующий _id карточки.' });
       } else {
         res.send(card);
       }
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(404).send({ message: 'Передан несуществующий _id карточки.' });
+        res.status(400).send({ message: 'Переданы некорректные данные для постановки/снятии лайка.' });
       } else {
         res.status(500).send({ message: 'Произошла ошибка по умолчанию' });
       }
     });
 };
 
-const dislikeCard = (req, res) => Card.findByIdAndUpdate(
-  req.params.cardId,
-  { $pull: { likes: req.user._id } }, // убрать _id из массива
-  { new: true },
-)
-  .then((card) => {
-    if (!card) {
-      res.status(400).send({ message: 'Переданы некорректные данные для постановки/снятии лайка.' });
-    } else {
-      res.send(card);
-    }
-  })
-  .catch((err) => {
-    if (err.name === 'CastError') {
-      res.status(404).send({ message: 'Передан несуществующий _id карточки.' });
-    } else {
-      res.status(500).send({ message: 'Произошла ошибка по умолчанию' });
-    }
-  });
+const dislikeCard = (req, res) => {
+  Card.findByIdAndUpdate(
+    req.params.cardId,
+    { $pull: { likes: req.user._id } }, // убрать _id из массива
+    { new: true, runValidators: true },
+  )
+    .then((card) => {
+      if (!card) {
+        res.status(404).send({ message: 'Передан несуществующий _id карточки.' });
+      } else {
+        res.status(200).send(card);
+      }
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Переданы некорректные данные для постановки/снятии лайка.' });
+      } else {
+        res.status(500).send({ message: 'Произошла ошибка по умолчанию' });
+      }
+    });
+};
 
 module.exports = {
   getCards,
