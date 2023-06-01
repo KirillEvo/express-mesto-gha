@@ -16,11 +16,16 @@ const getUsers = (req, res) => {
 const getUserById = (req, res) => {
   const { userId } = req.params;
   User.findById(userId)
-    .then((user) => res.status(200).send(user))
-    .catch((err) => {
-      console.log(err);
-      if (err.name === 'CastError') {
+    .then((user) => {
+      if (!user) {
         res.status(404).send({ message: `Пользователь по указанному _id не найден. ${userId}` });
+      } else {
+        res.status(200).send(user);
+      }
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Переданы некорректные данные' });
       } else {
         res.status(500).send({ message: 'Ошибка по умолчанию.' });
       }
