@@ -20,8 +20,10 @@ const postCards = (req, res) => {
   Card.create({ name, link, owner })
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.name === 'NotFoundError') {
-        res.status(NOT_FOUND_ERROR).send({ message: 'Карточка с указанным _id не найдена.' });
+      if (err.name === 'ValidationError') {
+        res.status(VALIDATION_ERROR).send({ message: 'Переданы некорректные данные при создании пользователя.' });
+      } else {
+        res.status(REFERENCE_ERROR).send({ message: 'Ошибка по умолчанию.' });
       }
     });
 };
