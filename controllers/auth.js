@@ -4,7 +4,7 @@ const User = require('../models/user');
 const ConflictError = require('../errors/conflict-error');
 const BadRequest = require('../errors/bad-request');
 
-const createUser = (req, res) => {
+const createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
@@ -25,9 +25,12 @@ const createUser = (req, res) => {
     })
     .catch((err) => {
       if (err.code === 11000) {
-        throw new ConflictError('Пользователь с тками email уже зарегистрирован');
+        next(new ConflictError('Пользователь с тками email уже зарегистрирован'));
+      } else if (err.name === 'ValidationError') {
+        next(new BadRequest('Переданы некорректные данные'));
+      } else {
+        next(err);
       }
-      throw new BadRequest('Переданы некорректные данные');
     });
 };
 
