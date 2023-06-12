@@ -14,10 +14,19 @@ const createUser = (req, res) => {
       email,
       password: hash, // записываем хеш в базу
     }))
-    .then((user) => {
-      res.status(201).send({ user });
+    .then(() => {
+      res.status(201).send({
+        data: {
+          name, about, avatar, email,
+        },
+      });
     })
-    .catch((err) => res.status(400).send(err));
+    .catch((err) => {
+      if (err.code === 11000) {
+        return res.status(409).send({ message: 'Пользователь с тками email уже зарегистрирован' });
+      }
+      return res.status(400).send({ message: 'Переданы некорректные данные' });
+    });
 };
 
 const login = (req, res) => {
