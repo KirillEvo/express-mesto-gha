@@ -2,6 +2,8 @@ const bcrypt = require('bcryptjs');
 const validator = require('validator');
 const mongoose = require('mongoose');
 
+const regurl = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/;
+
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -19,7 +21,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: 'https://u2.9111s.ru/uploads/202207/10/e8db991015b545aec8f2c3785664cfac.jpg',
     validate: {
-      validator: (v) => validator.isURL(v),
+      validator: (v) => regurl.test(v),
       message: 'Некорректный URL',
     },
   },
