@@ -1,4 +1,5 @@
 const User = require('../models/user');
+const NotFoundError = require('../errors/not-found-err');
 
 const getUsers = (req, res) => {
   User.find({})
@@ -17,22 +18,9 @@ const getUserById = (req, res) => {
     })
     .catch((err) => {
       if (err.message === 'NotValidId') {
-        res.status(404).send({ message: 'Пользователь по указанному _id не найден.' });
+        throw new NotFoundError('Пользователь по указанному _id не найден.');
       } else if (err.name === 'CastError') {
         res.status(400).send({ message: 'Переданы некорректные данные' });
-      } else {
-        res.status(500).send({ message: 'Ошибка по умолчанию.' });
-      }
-    });
-};
-
-const createNewUser = (req, res) => {
-  const { name, about, avatar } = req.body;
-  User.create({ name, about, avatar })
-    .then((user) => res.status(201).send(user))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Переданы некорректные данные при создании пользователя.' });
       } else {
         res.status(500).send({ message: 'Ошибка по умолчанию.' });
       }
@@ -48,7 +36,7 @@ const updateUser = (req, res) => {
   )
     .then((user) => {
       if (!user) {
-        return res.status(404).send({ message: 'Пользователь с указанным _id не найден.' });
+        throw new NotFoundError('Пользователь с указанным _id не найден.');
       }
       return res.send({ data: user });
     })
@@ -72,7 +60,7 @@ const updateUserAvatar = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'NotFoundError') {
-        res.status(404).send({ message: 'Переданы некорректные данные при обновлении аватара' });
+        throw new NotFoundError('Переданы некорректные данные при обновлении аватара');
       } else {
         res.status(500).send({ message: 'Произошла ошибка по умолчанию' });
       }
@@ -82,7 +70,6 @@ const updateUserAvatar = (req, res) => {
 module.exports = {
   getUsers,
   getUserById,
-  createNewUser,
   updateUser,
   updateUserAvatar,
 };

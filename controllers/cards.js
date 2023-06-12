@@ -1,4 +1,6 @@
 const Card = require('../models/card');
+const NotFoundError = require('../errors/not-found-err');
+const ForbiddenError = require('../errors/forbidden-error');
 
 const getCards = (req, res) => {
   Card
@@ -28,10 +30,15 @@ const postCards = (req, res) => {
 };
 
 const deleteCards = (req, res) => {
-  Card.findByIdAndRemove(req.params.cardId)
+  const { cardId } = req.params;
+  const { userId } = req.user;
+  Card.findByIdAndRemove(cardId)
     .then((card) => {
+      const cardOwner = card.owner;
       if (!card) {
-        res.status(404).send({ message: 'Карточка с указанным _id не найдена' });
+        throw new NotFoundError('Карточка с указанным _id не найдена');
+      } else if (!userId === cardOwner) {
+        throw new ForbiddenError('Нету прав доступа');
       } else {
         res.status(200).send(card);
       }
@@ -53,7 +60,7 @@ const likeCard = (req, res) => {
   )
     .then((card) => {
       if (!card) {
-        res.status(404).send({ message: 'Передан несуществующий _id карточки.' });
+        throw new NotFoundError('Передан несуществующий _id карточки.');
       } else {
         res.send(card);
       }
@@ -75,7 +82,7 @@ const dislikeCard = (req, res) => {
   )
     .then((card) => {
       if (!card) {
-        res.status(404).send({ message: 'Передан несуществующий _id карточки.' });
+        throw new NotFoundError('Передан несуществующий _id карточки.');
       } else {
         res.status(200).send(card);
       }
