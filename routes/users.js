@@ -7,10 +7,12 @@ const {
   updateUserAvatar,
 } = require('../controllers/users');
 
+const { validateUserId } = require('../middlewares/validation');
+
 router.get('/', getUsers);
 router.get('/:userId', getUserById);
 
-router.get('/me', getUsers);
+router.get('/me', validateUserId, getUsers);
 
 router.patch('/me', updateUser);
 router.patch('/me/avatar', updateUserAvatar);
