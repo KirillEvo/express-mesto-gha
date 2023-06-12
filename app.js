@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const helmet = require('helmet');
 const routes = require('./routes');
 const auth = require('./middlewares/auth');
+const { validateCreateUser, validateLogin } = require('./middlewares/validation');
 
 const { PORT = 3000 } = process.env;
 
@@ -19,15 +20,15 @@ mongoose.connect('mongodb://127.0.0.1:27017/mestodb', {
 
 const { createUser, login } = require('./controllers/auth');
 
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // за 15 минут
-  max: 100, // можно совершить максимум 100 запросов с одного IP
-});
+// const limiter = rateLimit({
+//   windowMs: 15 * 60 * 1000, // за 15 минут
+//   max: 100, // можно совершить максимум 100 запросов с одного IP
+// });
 
-app.use(limiter);
+// app.use(limiter);
 
-app.post('/signin', login);
-app.post('/signup', createUser);
+app.post('/signin', validateLogin, login);
+app.post('/signup', validateCreateUser, createUser);
 app.use(auth);
 app.use(routes);
 

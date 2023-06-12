@@ -5,30 +5,32 @@ const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: [true, 'Поле "name" должно быть заполнено'],
     minlength: [2, 'Минимальная длина поля "name" - 2'],
     maxlength: [30, 'Максимальная длина поля "name" - 30'],
     default: 'Жак-Ив Кусто',
   },
   about: {
     type: String,
-    required: true,
     minlength: [2, 'Минимальная длина поля "name" - 2'],
     maxlength: [30, 'Максимальная длина поля "name" - 30'],
     default: 'Иследователь',
   },
   avatar: {
     type: String,
+    default: 'https://u2.9111s.ru/uploads/202207/10/e8db991015b545aec8f2c3785664cfac.jpg',
     validate: {
       validator: (v) => validator.isURL(v),
       message: 'Некорректный URL',
     },
-    required: true,
   },
   email: {
     type: String,
     required: true,
     unique: true,
+    validate: {
+      validator: (v) => validator.isEmail(v),
+      message: 'Неправильный формат почты',
+    },
   },
   password: {
     type: String,

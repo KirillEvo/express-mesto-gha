@@ -23,7 +23,7 @@ const createUser = (req, res) => {
     })
     .catch((err) => {
       if (err.code === 11000) {
-        return res.status(409).send({ message: 'Пользователь с тками email уже зарегистрирован' });
+        return res.send({ message: 'Пользователь с тками email уже зарегистрирован' });
       }
       return res.status(400).send({ message: 'Переданы некорректные данные' });
     });
@@ -36,7 +36,7 @@ const login = (req, res) => {
       // аутентификация успешна! пользователь в переменной user
       const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
       // вернём токен
-      res.send({ token });
+      res.status(201).send({ token });
     })
     .catch((err) => {
       // ошибка аутентификации
