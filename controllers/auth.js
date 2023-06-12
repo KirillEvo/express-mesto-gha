@@ -1,6 +1,8 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const ConflictError = require('../errors/conflict-error');
+const BadRequest = require('../errors/bad-request');
 
 const createUser = (req, res) => {
   const {
@@ -23,9 +25,9 @@ const createUser = (req, res) => {
     })
     .catch((err) => {
       if (err.code === 11000) {
-        return res.send({ message: 'Пользователь с тками email уже зарегистрирован' });
+        throw new ConflictError('Пользователь с тками email уже зарегистрирован');
       }
-      return res.status(400).send({ message: 'Переданы некорректные данные' });
+      throw new BadRequest('Переданы некорректные данные');
     });
 };
 
@@ -36,7 +38,7 @@ const login = (req, res) => {
       // аутентификация успешна! пользователь в переменной user
       const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
       // вернём токен
-      res.status(201).send({ token });
+      res.status(200).send({ token });
     })
     .catch((err) => {
       // ошибка аутентификации
