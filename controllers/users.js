@@ -50,15 +50,15 @@ const updateUser = (req, res) => {
     });
 };
 
-const updateUserAvatar = (req, res) => {
+const updateUserAvatar = (req, res, next) => {
   const { avatar } = req.body;
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .then((user) => {
       res.status(200).send(user);
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
-        throw new BadRequest('Переданы некорректные данные при обновлении аватара');
+      if (err.name === 'CastError' || err.name === 'ValidationError') {
+        next(new BadRequest('Переданы некорректные данные при обновлении аватара'));
       } else {
         res.status(500).send({ message: 'Произошла ошибка по умолчанию' });
       }
