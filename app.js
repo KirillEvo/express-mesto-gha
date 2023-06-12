@@ -2,6 +2,7 @@ const express = require('express');
 const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 const mongoose = require('mongoose');
+const { errors } = require('celebrate');
 const helmet = require('helmet');
 const routes = require('./routes');
 const auth = require('./middlewares/auth');
@@ -36,6 +37,7 @@ app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
 });
 
+app.use(errors());
 app.use((err, req, res, next) => {
   // если у ошибки нет статуса, выставляем 500
   const { statusCode = 500, message } = err;
