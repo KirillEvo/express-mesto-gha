@@ -27,14 +27,7 @@ const validateLogin = celebrate({
   }),
 });
 
-const validateUserId = celebrate({
-  body: Joi.object().keys({
-    userId: Joi.string().required(),
-  }),
-});
-
 module.exports = {
   validateCreateUser,
   validateLogin,
-  validateUserId,
 };
