@@ -10,21 +10,21 @@ const getUsers = (req, res) => {
     });
 };
 
-const getUserById = (req, res) => {
+const getUserById = (req, res, next) => {
   const { userId } = req.params;
   User.findById(userId)
-    .orFail(new Error('NotValidId'))
     .then((user) => {
-      res.send(user);
+      if (!user) {
+        throw new NotFoundError('Пользователь не найден');
+      }
+      res.send({ data: user });
     })
     .catch((err) => {
-      if (err.message === 'NotValidId') {
-        throw new NotFoundError('Пользователь по указанному _id не найден.');
-      } else if (err.name === 'CastError') {
-        throw new BadRequest('Переданы некорректные данные');
-      } else {
-        res.status(500).send({ message: 'Ошибка по умолчанию.' });
+      if (err.name === 'CastError') {
+        next(new BadRequest('Передан некорретный Id'));
+        return;
       }
+      next(err);
     });
 };
 
