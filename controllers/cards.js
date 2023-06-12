@@ -32,17 +32,15 @@ const postCards = (req, res) => {
 
 const deleteCards = (req, res, next) => {
   const { cardId } = req.params;
-  const { userId } = req.user;
   Card.findByIdAndRemove(cardId)
     .then((card) => {
       if (!card) {
-        // res.status(404).send({ message: 'No id card' });
         throw new NotFoundError('Карточка с указанным _id не найдена');
+      } else if (!card.owner.equals(req.user._id)) {
+        return next(new ForbiddenError('Нету прав доступа'));
+      } else {
+        return res.send(card);
       }
-      if (!userId === card.owner) {
-        throw new ForbiddenError('Нету прав доступа');
-      }
-      res.status(200).send(card);
     })
     .catch(next);
 };
