@@ -41,7 +41,12 @@ const login = (req, res) => {
       // аутентификация успешна! пользователь в переменной user
       const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
       // вернём токен
-      res.status(200).send({ token });
+      res.cookie('jwt', token, {
+        maxAge: 3600000,
+        httpOnly: true,
+        sameSite: true,
+      });
+      res.send({ token });
     })
     .catch((err) => {
       // ошибка аутентификации

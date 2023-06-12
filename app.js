@@ -1,5 +1,6 @@
 const express = require('express');
-const rateLimit = require('express-rate-limit');
+const cookieParser = require('cookie-parser');
+// const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 const mongoose = require('mongoose');
 const { errors } = require('celebrate');
@@ -19,6 +20,8 @@ mongoose.connect('mongodb://127.0.0.1:27017/mestodb', {
   useNewUrlParser: true, useUnifiedTopology: true,
 });
 
+app.use(cookieParser());
+
 const { createUser, login } = require('./controllers/auth');
 
 // const limiter = rateLimit({
@@ -30,14 +33,12 @@ const { createUser, login } = require('./controllers/auth');
 
 app.post('/signin', validateLogin, login);
 app.post('/signup', validateCreateUser, createUser);
+
 app.use(auth);
 app.use(routes);
 
-app.listen(PORT, () => {
-  console.log(`App listening on port ${PORT}`);
-});
-
 app.use(errors());
+
 app.use((err, req, res, next) => {
   // если у ошибки нет статуса, выставляем 500
   const { statusCode = 500, message } = err;
@@ -47,8 +48,12 @@ app.use((err, req, res, next) => {
     .send({
       // проверяем статус и выставляем сообщение в зависимости от него
       message: statusCode === 500
-        ? 'На сервере произошла ошибка'
+        ? err.message
         : message,
     });
   next();
+});
+
+app.listen(PORT, () => {
+  console.log(`App listening on port ${PORT}`);
 });
