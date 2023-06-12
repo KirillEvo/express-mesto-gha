@@ -11,6 +11,7 @@ const {
 const {
   validateUserId,
   validateUpdateUser,
+  validateUpdateAvatar,
 } = require('../middlewares/validation');
 
 router.get('/', getUsers);
@@ -18,6 +19,6 @@ router.get('/me', getUser);
 router.get('/:userId', validateUserId, getUserById);
 
 router.patch('/me', validateUpdateUser, updateUser);
-router.patch('/me/avatar', updateUserAvatar);
+router.patch('/me/avatar', validateUpdateAvatar, updateUserAvatar);
 
 module.exports = router;
