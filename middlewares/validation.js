@@ -10,6 +10,13 @@ const validateUrl = (url) => {
   throw new BadRequest('Некорректный URL');
 };
 
+const validateID = (id) => {
+  if (/^[0-9a-fA-F]{24}$/.test(id)) {
+    return id;
+  }
+  throw new BadRequest('Некорректный ID');
+};
+
 const validateCreateUser = celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
@@ -27,7 +34,22 @@ const validateLogin = celebrate({
   }),
 });
 
+const validateUserId = celebrate({
+  params: Joi.object().keys({
+    userId: Joi.string().required().custom(validateID),
+  }),
+});
+
+const validateUpdateUser = celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+  }),
+});
+
 module.exports = {
   validateCreateUser,
   validateLogin,
+  validateUserId,
+  validateUpdateUser,
 };
