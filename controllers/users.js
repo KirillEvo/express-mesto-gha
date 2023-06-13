@@ -26,40 +26,36 @@ const getUserById = (req, res, next) => {
     });
 };
 
+function cachingDecorator(func) {
+  const cache = new Map();
+
+  // eslint-disable-next-line func-names
+  return function (x) {
+    if (cache.has(x)) { // если кеш содержит такой x,
+      return cache.get(x); // читаем из него результат
+    }
+
+    const result = func(x); // иначе, вызываем функцию
+
+    cache.set(x, result); // и кешируем (запоминаем) результат
+    return result;
+  };
+}
+
+function updateUserData(req, res, next, args) {
+  User.findByIdAndUpdate(req.user._id, args, { new: true, runValidators: true })
+    .then((user) => { next(res.send({ user })); })
+    .catch(next);
+}
+
 const updateUser = (req, res, next) => {
   const { name, about } = req.body;
-  User.findByIdAndUpdate(
-    req.user._id,
-    { name, about },
-    { new: true, runValidators: true },
-  )
-    .then((user) => {
-      if (!user) {
-        throw new NotFoundError('Пользователь с указанным _id не найден.');
-      }
-      return res.send({ data: user });
-    })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        return next(new BadRequest('Переданы некорректные данные при обновлении профиля.'));
-      }
-      return res.status(500).send({ message: 'Ошибка по умолчанию.' });
-    });
+  cachingDecorator(updateUserData(req, res, next, { name, about }));
 };
 
 const updateUserAvatar = (req, res, next) => {
   const { avatar } = req.body;
-  User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
-    .then((user) => {
-      res.status(200).send(user);
-    })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(new BadRequest('Переданы некорректные данные при обновлении аватара'));
-      } else {
-        res.status(500).send({ message: 'Произошла ошибка по умолчанию' });
-      }
-    });
+  cachingDecorator(updateUserData(req, res, next, { avatar }));
 };
 
 const getUser = (req, res) => {
