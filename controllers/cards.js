@@ -26,6 +26,7 @@ const postCards = (req, res, next) => {
 
 const deleteCards = (req, res, next) => {
   const { cardId } = req.params;
+
   Card.findById(cardId)
     .then((card) => {
       if (!card) {
@@ -33,11 +34,15 @@ const deleteCards = (req, res, next) => {
       } else if (!card.owner.equals(req.user._id)) {
         return next(new ForbiddenError('Нету прав доступа'));
       } else {
-        Card.findByIdAndRemove(cardId);
-        return res.send({ data: card });
+        return Card.findByIdAndRemove(cardId);
       }
     })
-    .catch(next);
+    .then((card) => {
+      res.send({ message: 'Карточка была успешно удалена', data: card });
+    })
+    .catch((err) => {
+      next(err);
+    });
 };
 
 const likeCard = (req, res, next) => {
