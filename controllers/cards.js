@@ -33,10 +33,10 @@ const deleteCards = (req, res, next) => {
       } else if (!card.owner.equals(req.user._id)) {
         return next(new ForbiddenError('Нету прав доступа'));
       } else {
+        res.send({ data: card });
         return Card.findByIdAndRemove(cardId);
       }
     })
-    .then((card) => { res.send({ data: card }); })
     .catch(next);
 };
 
