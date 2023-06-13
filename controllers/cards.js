@@ -10,14 +10,14 @@ const getCards = (req, res, next) => {
     .catch(next);
 };
 
-const postCards = (req, res) => {
+const postCards = (req, res, next) => {
   const { name, link } = req.body;
   const owner = req.user._id;
   Card.create({ name, link, owner })
     .then((card) => res.status(201).send(card))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Переданы некорректные данные при создании пользователя.' });
+        next(new BadRequest('Переданы некорректные данные при создании пользователя.'));
       } else {
         res.status(500).send({ message: 'Ошибка по умолчанию.' });
       }
@@ -33,8 +33,8 @@ const deleteCards = (req, res, next) => {
       } else if (!card.owner.equals(req.user._id)) {
         return next(new ForbiddenError('Нету прав доступа'));
       } else {
-        res.send({ data: card });
-        return Card.findByIdAndRemove(cardId);
+        Card.findByIdAndRemove(cardId);
+        return res.send({ data: card });
       }
     })
     .catch(next);
@@ -77,7 +77,7 @@ const dislikeCard = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Переданы некорректные данные для постановки/снятии лайка.' });
+        next(new BadRequest('Переданы некорректные данные для постановки/снятии лайка.'));
       } else {
         res.status(500).send({ message: 'Произошла ошибка по умолчанию' });
       }

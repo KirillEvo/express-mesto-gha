@@ -26,22 +26,6 @@ const getUserById = (req, res, next) => {
     });
 };
 
-function cachingDecorator(func) {
-  const cache = new Map();
-
-  // eslint-disable-next-line func-names
-  return function (x) {
-    if (cache.has(x)) { // если кеш содержит такой x,
-      return cache.get(x); // читаем из него результат
-    }
-
-    const result = func(x); // иначе, вызываем функцию
-
-    cache.set(x, result); // и кешируем (запоминаем) результат
-    return result;
-  };
-}
-
 function updateUserData(req, res, next, args) {
   User.findByIdAndUpdate(req.user._id, args, { new: true, runValidators: true })
     .then((user) => { next(res.send({ user })); })
@@ -50,15 +34,15 @@ function updateUserData(req, res, next, args) {
 
 const updateUser = (req, res, next) => {
   const { name, about } = req.body;
-  cachingDecorator(updateUserData(req, res, next, { name, about }));
+  updateUserData(req, res, next, { name, about });
 };
 
 const updateUserAvatar = (req, res, next) => {
   const { avatar } = req.body;
-  cachingDecorator(updateUserData(req, res, next, { avatar }));
+  updateUserData(req, res, next, { avatar });
 };
 
-const getUser = (req, res) => {
+const getUser = (req, res, next) => {
   User.findById(req.user._id)
     .then((user) => {
       if (!user) {
@@ -66,13 +50,7 @@ const getUser = (req, res) => {
       }
       return res.status(200).send(user);
     })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        throw new BadRequest('Переданы некорректные данные');
-      } else {
-        res.status(500).send({ message: 'Произошла ошибка по умолчанию' });
-      }
-    });
+    .catch(next);
 };
 
 module.exports = {

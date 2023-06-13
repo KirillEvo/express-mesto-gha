@@ -9,13 +9,13 @@ module.exports = (req, res, next) => {
   let payload;
   try {
     if (!token) {
-      next(new UnauthorizedError('Необходима авторизация'));
+      return next(new UnauthorizedError('Необходима авторизация'));
     }
     // попытаемся верифицировать токен
     payload = jwt.verify(token, 'some-secret-key');
   } catch (err) {
     // отправим ошибку, если не получилось
-    return new UnauthorizedError('Необходима авторизация');
+    return next(new UnauthorizedError('Необходима авторизация'));
     // throw new UnauthorizedError('Необходима авторизация');
   }
 

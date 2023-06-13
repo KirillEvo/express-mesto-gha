@@ -39,14 +39,14 @@ const login = (req, res) => {
   return User.findUserByCredentials(email, password)
     .then((user) => {
       // аутентификация успешна! пользователь в переменной user
-      const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
+      const token = jwt.sign({ _id: user._id }, 'some-secret-key');
       // вернём токен
       res.cookie('jwt', token, {
         maxAge: 3600000,
         httpOnly: true,
         sameSite: true,
       });
-      res.send({ token });
+      res.send({ message: 'Авторизация прошла успешно' });
     })
     .catch((err) => {
       // ошибка аутентификации

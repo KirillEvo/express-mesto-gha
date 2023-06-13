@@ -3,6 +3,8 @@ const router = require('express').Router();
 
 const NotFoundError = require('../errors/not-found-err');
 
+router.use(express.json());
+
 const userRoutes = require('./users');
 const cardRoutes = require('./cards');
 
@@ -13,5 +15,4 @@ router.use('*', (req, res, next) => {
   next(new NotFoundError('Некорректный путь'));
 });
 
-router.use(express.json());
 module.exports = router;
