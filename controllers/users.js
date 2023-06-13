@@ -2,12 +2,10 @@ const User = require('../models/user');
 const NotFoundError = require('../errors/not-found-err');
 const BadRequest = require('../errors/bad-request');
 
-const getUsers = (req, res) => {
+const getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.status(200).send(users))
-    .catch(() => {
-      res.status(500).send({ message: 'Ошибка по умолчанию.' });
-    });
+    .catch(next);
 };
 
 const getUserById = (req, res, next) => {
@@ -28,7 +26,7 @@ const getUserById = (req, res, next) => {
     });
 };
 
-const updateUser = (req, res) => {
+const updateUser = (req, res, next) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(
     req.user._id,
@@ -43,10 +41,9 @@ const updateUser = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        throw new BadRequest('Переданы некорректные данные при обновлении профиля.');
-      } else {
-        res.status(500).send({ message: 'Ошибка по умолчанию.' });
+        return next(new BadRequest('Переданы некорректные данные при обновлении профиля.'));
       }
+      return res.status(500).send({ message: 'Ошибка по умолчанию.' });
     });
 };
 
@@ -57,7 +54,7 @@ const updateUserAvatar = (req, res, next) => {
       res.status(200).send(user);
     })
     .catch((err) => {
-      if (err.name === 'CastError' || err.name === 'ValidationError') {
+      if (err.name === 'ValidationError') {
         next(new BadRequest('Переданы некорректные данные при обновлении аватара'));
       } else {
         res.status(500).send({ message: 'Произошла ошибка по умолчанию' });

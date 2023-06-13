@@ -3,17 +3,11 @@ const NotFoundError = require('../errors/not-found-err');
 const ForbiddenError = require('../errors/forbidden-error');
 const BadRequest = require('../errors/bad-request');
 
-const getCards = (req, res) => {
+const getCards = (req, res, next) => {
   Card
     .find({})
     .then((cards) => res.send(cards))
-    .catch((err) => {
-      if (err.name === 'ReferenceError') {
-        res.status(400).send({ message: 'Переданы некорректные данные при создании карточки.' });
-      } else {
-        res.status(500).send({ message: 'Ошибка по умолчанию.' });
-      }
-    });
+    .catch(next);
 };
 
 const postCards = (req, res) => {
@@ -32,14 +26,14 @@ const postCards = (req, res) => {
 
 const deleteCards = (req, res, next) => {
   const { cardId } = req.params;
-  Card.findByIdAndRemove(cardId)
+  Card.findById(cardId)
     .then((card) => {
       if (!card) {
         throw new NotFoundError('Карточка с указанным _id не найдена');
       } else if (!card.owner.equals(req.user._id)) {
         return next(new ForbiddenError('Нету прав доступа'));
       } else {
-        return res.send(card);
+        return card.remove().then(() => res.send({ message: 'Карточка удалена' }));
       }
     })
     .catch(next);
