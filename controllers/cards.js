@@ -34,11 +34,11 @@ const deleteCards = (req, res, next) => {
       } else if (!card.owner.equals(req.user._id)) {
         return next(new ForbiddenError('Нету прав доступа'));
       } else {
-        return Card.findByIdAndRemove(cardId);
+        return Card.findByIdAndRemove(cardId)
+          .then(() => {
+            res.send({ message: 'Карточка была успешно удалена' });
+          });
       }
-    })
-    .then((card) => {
-      res.send({ message: 'Карточка была успешно удалена', data: card });
     })
     .catch((err) => {
       next(err);
