@@ -19,7 +19,7 @@ const postCards = (req, res, next) => {
       if (err.name === 'ValidationError') {
         next(new BadRequest('Переданы некорректные данные при создании пользователя.'));
       } else {
-        res.status(500).send({ message: 'Ошибка по умолчанию.' });
+        next(err);
       }
     });
 };
@@ -62,7 +62,7 @@ const likeCard = (req, res, next) => {
       if (err.name === 'CastError') {
         next(new BadRequest('Переданы некорректные данные для постановки/снятии лайка.'));
       } else {
-        res.status(500).send({ message: 'Произошла ошибка по умолчанию' });
+        next(err);
       }
     });
 };
@@ -84,7 +84,7 @@ const dislikeCard = (req, res, next) => {
       if (err.name === 'CastError') {
         next(new BadRequest('Переданы некорректные данные для постановки/снятии лайка.'));
       } else {
-        res.status(500).send({ message: 'Произошла ошибка по умолчанию' });
+        next(err);
       }
     });
 };
