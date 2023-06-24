@@ -5,7 +5,7 @@ const UnauthorizedError = require('../errors/unauthorized_error');
 
 // eslint-disable-next-line consistent-return
 module.exports = (req, res, next) => {
-  // извлечём токен
+  // извлекаем токен
   const token = req.cookies.jwt;
   // верифицируем токен
   let payload;
