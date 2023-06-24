@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
-const rateLimit = require('express-rate-limit');
+// const rateLimit = require('express-rate-limit');
 const mongoose = require('mongoose');
 const { errors } = require('celebrate');
 const helmet = require('helmet');
@@ -27,12 +27,12 @@ mongoose.connect(MONGO_URL, {
 
 app.use(cookieParser());
 
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  standardHeaders: true,
-  legacyHeaders: false,
-});
+// const limiter = rateLimit({
+//   windowMs: 15 * 60 * 1000,
+//   max: 100,
+//   standardHeaders: true,
+//   legacyHeaders: false,
+// });
 
 app.use(requestLogger);
 app.post('/signin', validateLogin, login);
@@ -41,7 +41,7 @@ app.post('/signup', validateCreateUser, createUser);
 app.use(auth);
 app.use(routes);
 
-app.use(limiter);
+// app.use(limiter);
 app.use(helmet());
 
 app.use(errorLogger);
