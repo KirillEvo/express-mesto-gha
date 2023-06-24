@@ -4,7 +4,7 @@ const User = require('../models/user');
 const ConflictError = require('../errors/conflict-error');
 const BadRequest = require('../errors/bad-request');
 
-const { NODE_ENV, JWT_SECRET } = process.env;
+// const { NODE_ENV, JWT_SECRET } = process.env;
 
 const createUser = (req, res, next) => {
   const {
@@ -41,7 +41,9 @@ const login = (req, res, next) => {
   return User.findUserByCredentials(email, password)
     .then((user) => {
       // аутентификация успешна! пользователь в переменной user
-      const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret');
+      const token = jwt.sign({ _id: user._id }, 'some-secret-key');
+      // eslint-disable-next-line max-len
+      // const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret');
       // вернём токен
       res.cookie('jwt', token, {
         maxAge: 3600000,
