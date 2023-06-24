@@ -13,7 +13,7 @@ const auth = require('./middlewares/auth');
 const { validateCreateUser, validateLogin } = require('./middlewares/validation');
 const { createUser, login } = require('./controllers/auth');
 
-const { MONGO_URL } = process.env;
+// const { MONGO_URL } = process.env;
 
 const { PORT = 3000 } = process.env;
 
@@ -21,7 +21,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-mongoose.connect(MONGO_URL, {
+mongoose.connect('mongodb://127.0.0.1:27017/mestodb', {
   useNewUrlParser: true, useUnifiedTopology: true,
 });
 
