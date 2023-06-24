@@ -9,7 +9,7 @@ const helmet = require('helmet');
 const routes = require('./routes');
 const auth = require('./middlewares/auth');
 
-const { requestLogger, errorLogger } = require('./middlewares/logger');
+// const { requestLogger, errorLogger } = require('./middlewares/logger');
 const { validateCreateUser, validateLogin } = require('./middlewares/validation');
 const { createUser, login } = require('./controllers/auth');
 
@@ -34,7 +34,7 @@ app.use(cookieParser());
 //   legacyHeaders: false,
 // });
 
-app.use(requestLogger);
+// app.use(requestLogger);
 app.post('/signin', validateLogin, login);
 app.post('/signup', validateCreateUser, createUser);
 
@@ -44,7 +44,7 @@ app.use(routes);
 // app.use(limiter);
 app.use(helmet());
 
-app.use(errorLogger);
+// app.use(errorLogger);
 
 app.use(errors());
 
